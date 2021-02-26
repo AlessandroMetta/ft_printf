@@ -1,51 +1,105 @@
-#include <stdarg.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ametta <ametta@student.42roma.it>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/02/26 12:58:45 by ametta            #+#    #+#             */
+/*   Updated: 2021/02/26 15:34:58 by ametta           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-void	ft_putchar(char c);
+#include "ft_printf.h"
 
-void	ft_putnbr(int n);
+/*
+** ci sono vari informazioni di conversione che possiamo dare a printf:
+** - le option o flags (noi dobbiamo gestire solo -, che allinea a sinistra
+**	 l'argomento convertito, e 0, che nelle conversione numeriche 
+**	 va ad inserire zeri in testa fino al raggiungimento dell'ampiezza del campo)
+** - un numero che specifica l'ampiezza del campo. se l'argomento cconvertito
+**	 ha meno caratteri dell'ampiezza minima del campo, saranno aggiunti in testa
+**	 dei caratteri spazio, se specificata la flag 0, vengono aggiunti in testa 
+**	 caratteri zero, se invece viene specificata la flag -, gli spazi vengono
+**	 inseriti in coda, fino a raggiungere l'ampiezza richiesta.
+** - il punto, per separare l'ampiezza dalla precisione
+** - il grado di precisione che specifichi:
+**	- per le stringhe, il massimo numero di caratteri da scrivere;
+**	- per gli interi il numero minimo di cifre da scrivere, con l'aggiunta di 0
+**	  in testa per raggiunngere l'ampiezza richiesta.
+** - infine il ccarattere di conversione (noi dobbiamo gestire solamente i seguenti: 
+**	 csdiuxXp%)
+**	per salvare tutte queste informazioni, ci conviene creare una struttura e 
+**	definirla come tipo. Essa conterrá tutte queste informazionii.
+*/
 
-void	ft_putnumbase(int nbr, int base, int ESA);
-
-void    ft_putadd(int nbr);
-
-int	ft_printf(const char *input, ...)
+static void init_stc(t_cnv_opt *to_init)	/* inizializzazione della struttura cnv_opt */
 {
-	va_list arg;
-	int counter = 0;
-	char *sval;
+	if(to_init)
+	{
+		to_init->zero = 0;
+		to_init->minus = 0;
+		to_init->width = 0;
+		to_init->precision = -1;
+		to_init->type = '\0';
+	}
+}
+
+void		conversion(int *ret, va_list arg, t_cnv_opt *cnv_opt)	/* indirizza verso la corretta funzione per la conversione */
+{
+	if (cnv_opt->type == 'c')
+		print_char(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 's')
+		print_string(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 'd' || cnv_opt->type == 'i')
+		print_integer(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 'u')
+		print_unsigned_integer(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 'x')
+		print_hex_low(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 'X')
+		print_hex_up(ret, arg, cnv_opt);
+	else if (cnv_opt->type == 'p')
+		print_ptr_add(ret, arg, cnv_opt);
+	else if (cnv_opt->type == '%')
+		print_percent(ret, cnv_opt);
+	else
+		*ret = -1;
+	
+}
+
+int			parse_conversion(const char *input, va_list arg, int *ret)
+{
+	t_cnv_opt cnv_opt;
+	const char *original;
+
+	original = input;
+	init_stc(&cnv_opt);
+	input += parse_flag(input, &cnv_opt);
+	input += parse_width(input, &cnv_opt);
+	input += parse_precision(input, &cnv_opt);
+	input += parse_type(input, &cnv_opt);
+	conversion(ret, arg, &cnv_opt);
+	return (input - original);
+}
+
+int			ft_printf(const char *input, ...)
+{
+	va_list	arg;
+	int		ret;
 
 	va_start(arg, input);
+	ret = 0;
 	while (*input)
 	{
 		if (*input != '%')
-			ft_putchar(*input);
-		else if (*++input == 'd' || *input == 'i')
-			ft_putnbr(va_arg(arg, int));
-//		else if (*input == 'u')
-			//
-		else if (*input == 'o')
-			ft_putnumbase(va_arg(arg, int), 8, 0);
-		else if (*input == 'x')
-			ft_putnumbase(va_arg(arg, int), 16, 0);
-		else if (*input == 'X')
-			ft_putnumbase(va_arg(arg, int), 16, 1);
-		else if (*input == 'c')
-			ft_putchar(va_arg(arg, int));
-		else if (*input == 'p')
-			ft_putadd(va_arg(arg, int));
-		else if (*input == 's')
 		{
-			sval = va_arg(arg, char *);
-			while(*sval)
-				ft_putchar(*sval++);
+			ft_putchar(input);
+			input++;
+			ret++;
 		}
-		else if (*input == '%')
-			ft_putchar('%');
-		// else
-			// ERRORE
-		input++;
-		counter++;
+		else
+			input += parse_conversion(*input, arg, &ret);
 	}
-	va_end(arg);
-	return (counter);
+	return (ret);
 }
