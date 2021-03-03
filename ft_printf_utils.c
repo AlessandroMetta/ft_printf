@@ -6,7 +6,7 @@
 /*   By: ametta <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 18:42:23 by ametta            #+#    #+#             */
-/*   Updated: 2021/03/02 18:42:28 by ametta           ###   ########.fr       */
+/*   Updated: 2021/03/03 15:34:26 by ametta           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,22 @@ void	fill(const char c, int size, int *ret)
 {
 	while (size-- > 0)
 	{
-			ft_putchar(c);
-			(*ret)++;
+		ft_putchar(c);
+		(*ret)++;
 	}
+}
+
+int		min(int a, int b)
+{
+	return (a < b ? a : b);
+}
+
+int		max(int a, int b)
+{
+	return (a > b ? a : b);
+}
+
+int		ft_isdigit(int c)
+{
+	return (c >= '0' && c <= '9' ? c : 0);
 }
