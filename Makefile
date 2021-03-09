@@ -7,12 +7,11 @@ NAME	=	libftprintf.a
 RM		=	rm -rf
 
 FILES	=	ft_printf.c				\
+			ft_printf_csuid_prc.c	\
+			ft_printf_esa_ptr.c		\
+			ft_printf_libft.c		\
+			ft_printf_parsing.c		\
 			ft_printf_utils.c		\
-			ft_printf_utils2.c		\
-			parsing.c				\
-			print_type/cs_pc.c		\
-			print_type/uid.c		\
-			print_type/xp.c			\
 
 OBJS = $(FILES:.c=.o)
 

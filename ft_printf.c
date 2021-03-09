@@ -1,124 +1,68 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_printf.c                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ametta <ametta@student.42roma.it>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/02/26 12:58:45 by ametta            #+#    #+#             */
-/*   Updated: 2021/03/03 17:02:11 by ametta           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-/*
-**					DESCRIZIONE DEL FUNZIONAMENTO DI PRINTF
-** ci sono vari informazioni di conversione che possiamo dare a printf:
-** - le option o flags (noi dobbiamo gestire solo -, che allinea a sinistra
-**	 l'argomento convertito, e 0, che nelle conversione numeriche
-**	 va ad inserire zeri in testa fino al raggiungimento dell'ampiezza del
-**	 campo)
-** - un numero che specifica l'ampiezza del campo. se l'argomento cconvertito
-**	 ha meno caratteri dell'ampiezza minima del campo, saranno aggiunti in
-**	 testa dei caratteri spazio, se specificata la flag 0, vengono aggiunti in
-**	 testa caratteri zero, se invece viene specificata la flag -, gli spazi
-**	 vengono inseriti in coda, fino a raggiungere l'ampiezza richiesta.
-** - il punto, per separare l'ampiezza dalla precisione
-** - il grado di precisione che specifichi:
-**		- per le stringhe, il massimo numero di caratteri da scrivere;
-**		- per gli interi il numero minimo di cifre da scrivere, con l'aggiunta
-**	  	  di zeri in testa per raggiunngere l'ampiezza richiesta.
-** - infine il ccarattere di conversione (noi dobbiamo gestire solamente i
-**	 seguenti: csdiuxXp%
-**	per salvare tutte queste informazioni, ci conviene creare una struttura e
-**	definirla come tipo. Essa conterrá tutte queste informazionii.
-*/
-
-void		ft_putchar(char c)
+static void	init_struct(t_specs *to_init)
 {
-	write(1, &c, 1);
+	to_init->zero = 0;
+	to_init->minus = 0;
+	to_init->width = 0;
+	to_init->precis = -1;
+	to_init->type = '\0';
 }
 
-/*
-**					inizializzazione della struttura cnv_opt
-*/
-
-static void	init_stc(t_cnv_opt *to_init)
+static void sorting_conv(va_list arg, t_specs *specs, int *printed)
 {
-	if (to_init)
-	{
-		to_init->zero = 0;
-		to_init->minus = 0;
-		to_init->width = 0;
-		to_init->precision = -1;
-		to_init->type = '\0';
-	}
-}
-
-/*
-**			esegue la funzione di conversione corretta
-*/
-
-static void	conversion(int *ret, va_list arg, t_cnv_opt *cnv_opt)
-{
-	if (cnv_opt->type == 'c')
-		print_char(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 's')
-		print_string(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 'd' || cnv_opt->type == 'i')
-		print_integer(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 'u')
-		print_unsigned_integer(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 'x')
-		print_hex_low(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 'X')
-		print_hex_up(ret, arg, cnv_opt);
-	else if (cnv_opt->type == 'p')
-		print_ptr(ret, arg, cnv_opt);
-	else if (cnv_opt->type == '%')
-		print_percent(ret, cnv_opt);
+	if (specs->type == 'c')
+		ft_print_chr(arg, specs, printed);
+	else if (specs->type == 's')
+		ft_print_str(arg, specs, printed);
+	else if (specs->type == 'i' || specs->type == 'd')
+		ft_print_integer(arg, specs, printed);
+	else if (specs->type == 'u')
+		ft_print_unsign_int(arg, specs, printed);
+	else if (specs->type == 'x')
+		ft_print_hex_low(arg, specs, printed);
+	else if (specs->type == 'X')
+		ft_print_hex_up(arg, specs, printed);
+	else if (specs->type == 'p')
+		ft_print_ptr(arg, specs, printed);
+	else if (specs->type == '%')
+		ft_print_prc(printed, specs);
 	else
-		*ret = -1;
+		(*printed) = -1; 
 }
 
-/*
-**				esegue il parsing di input una volta incontrato
-**				  % per ricavare le specifiche di conversione
-*/
-
-static int	parse_conversion(const char *input, va_list arg, int *ret)
+static void	conversion(const char **format, va_list arg, int *printed)
 {
-	t_cnv_opt	cnv_opt;
-	const char	*original;
+	t_specs specs;
 
-	original = input;
-	init_stc(&cnv_opt);
-	input += parse_flag(input, &cnv_opt);
-	input += parse_width(input, arg, &cnv_opt);
-	input += parse_precision(input, arg, &cnv_opt);
-	input += parse_type(input, &cnv_opt);
-	conversion(ret, arg, &cnv_opt);
-	return (input - original);
+	init_struct(&specs);
+	parse_flag(format, &specs);
+	parse_width(format, arg, &specs);
+	parse_precis(format, arg, &specs);
+	parse_type(format, &specs);
+	sorting_conv(arg, &specs, printed);
 }
 
-int			ft_printf(const char *input, ...)
+int			ft_printf(const char *format, ...)
 {
-	va_list	arg;
-	int		ret;
+	va_list arg;
+	int		printed;
 
-	va_start(arg, input);
-	ret = 0;
-	while (*input)
+	va_start(arg, format);
+	printed = 0;
+	while (*format)
 	{
-		if (*input != '%')
+		if(*format != '%')
 		{
-			ft_putchar(*input);
-			input++;
-			ret++;
+			write(1, format, 1);
+			printed++;
+			format++;
 		}
 		else
-			input += parse_conversion(input, arg, &ret);
+			conversion(&format, arg, &printed);
+		if (printed == -1)
+			return (-1);
 	}
-	return (ret);
+	va_end(arg);
+	return (printed);
 }

@@ -1,47 +1,55 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_printf_utils.c                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ametta <marvin@42.fr>                      +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/02 18:42:23 by ametta            #+#    #+#             */
-/*   Updated: 2021/03/03 15:34:26 by ametta           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-int		ft_strlen(char *str)
+char 	*ft_itoa_base(unsigned long long int nbr, char *ref_base)
 {
-	int		i;
+	int						size;
+	char					*str_nbr;
+	unsigned long long int	cp;
+	int						base;
+
+	cp = nbr;
+	base = ft_strlen(ref_base);
+	size = 1;
+	while (cp / base)
+	{
+		size++;
+		cp /= base;
+	}
+	if (!(str_nbr = (char *)malloc(sizeof(char) * (size + 1))))
+		return (NULL);
+	str_nbr[size--] = '\0';
+	str_nbr[0] = '0';
+	while (nbr > 0)
+	{
+		str_nbr[size--] = ref_base[nbr % base];
+		nbr /= base;
+	}
+	return (str_nbr);
+}
+
+int		fill(char c, int size)
+{
+	int i;
 
 	i = 0;
-	while (str[i])
-		i++;
-	return (i);
-}
-
-void	fill(const char c, int size, int *ret)
-{
-	while (size-- > 0)
+	while (i < size)
 	{
-		ft_putchar(c);
-		(*ret)++;
+		write(1, &c, 1);
+		i++;
 	}
-}
-
-int		min(int a, int b)
-{
-	return (a < b ? a : b);
+	return (i);
 }
 
 int		max(int a, int b)
 {
-	return (a > b ? a : b);
+	if (a > b)
+		return (a);
+	return (b);
 }
 
-int		ft_isdigit(int c)
+int		min(int a, int b)
 {
-	return (c >= '0' && c <= '9' ? c : 0);
+	if (a < b)
+		return (a);
+	return (b);
 }
