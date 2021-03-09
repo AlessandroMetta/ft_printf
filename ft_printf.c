@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ametta <marvin@42.fr>                      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/03/09 16:08:33 by ametta            #+#    #+#             */
+/*   Updated: 2021/03/09 16:09:03 by ametta           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
 
 static void	init_struct(t_specs *to_init)
@@ -9,7 +21,7 @@ static void	init_struct(t_specs *to_init)
 	to_init->type = '\0';
 }
 
-static void sorting_conv(va_list arg, t_specs *specs, int *printed)
+static void	sorting_conv(va_list arg, t_specs *specs, int *printed)
 {
 	if (specs->type == 'c')
 		ft_print_chr(arg, specs, printed);
@@ -28,7 +40,7 @@ static void sorting_conv(va_list arg, t_specs *specs, int *printed)
 	else if (specs->type == '%')
 		ft_print_prc(printed, specs);
 	else
-		(*printed) = -1; 
+		(*printed) = -1;
 }
 
 static void	conversion(const char **format, va_list arg, int *printed)
@@ -52,7 +64,7 @@ int			ft_printf(const char *format, ...)
 	printed = 0;
 	while (*format)
 	{
-		if(*format != '%')
+		if (*format != '%')
 		{
 			write(1, format, 1);
 			printed++;

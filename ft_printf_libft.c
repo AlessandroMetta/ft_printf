@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf_libft.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ametta <marvin@42.fr>                      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/03/09 16:10:35 by ametta            #+#    #+#             */
+/*   Updated: 2021/03/09 16:11:33 by ametta           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
 
 char	*ft_strchr(const char *str, int c)
 {
-	while(*str)
+	while (*str)
 	{
 		if (*str == c)
 			return ((char *)str);
@@ -18,7 +30,7 @@ int		ft_isdigit(const char c)
 	return (0);
 }
 
-size_t ft_atoi(const char *str)
+size_t	ft_atoi(const char *str)
 {
 	size_t nbr;
 
@@ -36,7 +48,7 @@ size_t	ft_strlen(const char *str)
 	size_t len;
 
 	len = 0;
-	while(*str++)
+	while (*str++)
 		len++;
 	return (len);
 }
